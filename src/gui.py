@@ -5,7 +5,7 @@ from src.main import Chatbot
 class gui:
 
     def __init__(self, database_name, nrows):
-        self.bot = Chatbot(database_name = "base_offres_propre.csv", nrows=1000)
+        self.bot = Chatbot(database_name = database_name, nrows=nrows)
 
         self.fenetre = Tk()
         self.canvas = Canvas(self.fenetre, borderwidth=0, background="#ffffff")
