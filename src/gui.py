@@ -1,5 +1,5 @@
 from tkinter import *
-from src.main import Chatbot
+from src.chatbot import Chatbot
 
 
 class gui:
@@ -104,5 +104,3 @@ class gui:
         self.frame.bind("<Configure>", lambda event, canvas=self.canvas: self.onFrameConfigure())
 
         self.fenetre.mainloop()
-
-bot_gui = gui(database_name = "base_offres_propre.csv", nrows=1000 )
