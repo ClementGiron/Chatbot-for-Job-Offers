@@ -47,7 +47,7 @@ class Chatbot:
             self.current_database = self.current_database[self.current_database['tps'] == info_traitee]
             self.step += 1
         else :
-            self.answer = "Vous êtes incapable de saisir partiel ou plein ! Essayez encore."
+            self.answer = "Veuillez saisir partiel ou plein."
 
     def emploi_adresse(self, information):
         gps = ville_to_gps(information, self.city_gps_base)
