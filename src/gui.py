@@ -1,10 +1,11 @@
 from tkinter import *
-from src.chatbot import Chatbot
+from chatbot import Chatbot
 
 
 class gui:
 
     def __init__(self, database_name, nrows):
+
         self.bot = Chatbot(database_name = database_name, nrows=nrows)
 
         self.fenetre = Tk()
@@ -22,6 +23,7 @@ class gui:
         self.LabelResultat = Label(self.fenetre, textvariable = self.reponse, width=30, wraplength=250)
         self.label = Label(self.fenetre, textvariable=self.question)
 
+        # A list of labels which are going to contain the job offers
         self.liste_offres = [StringVar(self.fenetre) for i in range(10)]
         for row in range(10):
             Label(self.frame, text="%s" % (row + 1), width=3, borderwidth="1",
@@ -32,14 +34,22 @@ class gui:
         self.run()
 
     def populate(self, liste_offres):
+        """Displays the job offers
+
+            Keyword arguments:
+            liste_offres -- An array of size 10 of the job offers
+            """
+
         for row in range(10):
             self.liste_offres[row].set(liste_offres[row])
 
     def send_info(self, event):
+        """Sends the information requested by the user to the Chatbot object and refreshes the screen accordingly"""
+
+        # Retrieves the user entry
         entree = self.entree.get()
 
-        print("bot step ", self.bot.step)
-
+        # According to which question the user replies to, we retrieve the answer and refresh the screen
         if self.bot.step < 5 :
             botrun = self.bot.run(entree)
             self.question.set(botrun[0])
@@ -49,11 +59,8 @@ class gui:
         else :
             self.bot.step += 1
 
-        print("bot step ", self.bot.step)
-
         if self.bot.step == 5 :
             self.populate(self.bot.liste_offres)
-        print("bot step ", self.bot.step)
 
         if self.bot.step == 6:
             if entree in ["Oui", "oui", "1"]:
@@ -62,7 +69,12 @@ class gui:
                 self.fenetre.destroy()
 
     def reset(self, event):
+        """Resets all the data and starts over from the first question"""
+
+        # Resets the chatbot attributes
         self.bot.reset()
+
+        # Resets the GUI
         botrun = self.bot.run(information = ' ')
         self.question.set(botrun[0])
         self.reponse.set(botrun[1])
@@ -72,10 +84,11 @@ class gui:
         self.LabelResultat.configure(textvariable = "")
 
     def onFrameConfigure(self):
-        '''Reset the scroll region to encompass the inner frame'''
+        """Reset the scroll region to encompass the inner frame"""
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
     def run(self):
+        """Launches the GUI"""
         # Buttons declaration
         ok_button = Button(self.fenetre, text ='OK')
         ok_button.bind("<Button-1>", self.send_info)
