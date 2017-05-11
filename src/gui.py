@@ -9,7 +9,12 @@ class gui:
         self.bot = Chatbot(database_name = database_name, nrows=nrows)
 
         self.fenetre = Tk()
+        self.fenetre.title('Chatbot')
+        self.fenetre.geometry('1000x600')
+
         self.canvas = Canvas(self.fenetre, borderwidth=0, background="#ffffff")
+        self.canvas.config(width=600, height=500)
+
         self.frame = Frame(self.canvas, background="#ffffff")
         self.vsb = Scrollbar(self.fenetre, orient="vertical", command=self.canvas.yview)
 
@@ -19,8 +24,8 @@ class gui:
         self.reponse = StringVar(self.fenetre)
         self.reponse.set(botrun[1])
 
-        self.entree = Entry(self.fenetre, textvariable=' ', width=30)
-        self.LabelResultat = Label(self.fenetre, textvariable = self.reponse, width=30, wraplength=250)
+        self.entree = Entry(self.fenetre, textvariable=' ', width=60)
+        self.LabelResultat = Label(self.fenetre, textvariable = self.reponse, width=60, wraplength=250)
         self.label = Label(self.fenetre, textvariable=self.question)
 
         # A list of labels which are going to contain the job offers

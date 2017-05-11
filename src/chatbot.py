@@ -1,5 +1,8 @@
 from functions import *
 
+import cytoolz as ct
+
+
 class Chatbot:
 
     def __init__(self, database_name, nrows):
@@ -14,6 +17,8 @@ class Chatbot:
         self.current_nb_offres = 0
         self.liste_offres = []
         self.current_tf_matrix_secteur = 0
+
+        self.period = 70
 
         # Full initial cleaned database of job offers
         self.database = pd.read_csv(database_name, header=0, encoding="utf8",dtype={"sect": str, "longitude": str, "latitude": str}, nrows=nrows)
@@ -31,7 +36,7 @@ class Chatbot:
         self.question_list = ["Cherchez-vous un emploi à temps plein ou à temps partiel ? ",
                               "Quelle est votre ville ?",
                               "Quelle distance êtes-vous prêt à parcourir pour aller travailler en Km?",
-                              "Dans quel secteur voulez-vous travailler ?",
+                              "Dans quel secteur voulez-vous travailler ? \n service, commerce, distribution, textile, mode, \n luxe, immobilier, industrie, environnement, btp, construction, \n agriculture, transport, logistique, service public, \n administration, médecine, santé, hotellerie, restauration, banque,\n  assurance, finance, telecommunication, internet, media,\n  tourisme, sport",
                               "Quel emploi cherchez-vous ?",
                               "Voulez-vous lancer une nouvelle recherche ?",
                               "Etes-vous satisfait ?"]
@@ -101,25 +106,30 @@ class Chatbot:
             information -- The entry of the user in a string format
             """
         # First we compute the TF matrix for the job sectors within the truncated database
-        self.current_tf_matrix_secteur = frequence_matrix(self.current_database)
+        try :
+            self.current_tf_matrix_secteur = frequence_matrix(self.current_database)
+            # We check the sectors mentioned in the user request and truncate the database accordingly
+            info_tokens = tokenize(information)
+            secteurs = list(self.current_tf_matrix_secteur.columns)
+            tokens_utiles = [e for e in info_tokens if e in secteurs]
 
-        # We check the sectors mentioned in the user request and truncate the database accordingly
-        info_tokens = tokenize(information)
-        secteurs = list(self.current_tf_matrix_secteur.columns)
-        tokens_utiles = [e for e in info_tokens if e in secteurs]
+            # We keep the offers which belong to the sectors requested by the user
+            offres_utiles = []
+            for e in tokens_utiles:
+                offres_utiles += list(self.current_tf_matrix_secteur[self.current_tf_matrix_secteur[e] == 1].index)
+                offres_utiles = list(ct.unique(offres_utiles))
+                offres_utiles = sorted(offres_utiles)
 
-        # We keep the offers which belong to the sectors requested by the user
-        offres_utiles = []
-        for e in tokens_utiles:
-            offres_utiles += list(self.current_tf_matrix_secteur[self.current_tf_matrix_secteur[e] == 1].index)
-            offres_utiles = list(ct.unique(offres_utiles))
-            offres_utiles = sorted(offres_utiles)
+            # If we found relevant job offers according to the sectors requested by the user, we update the database
+            if len(offres_utiles) != 0:
+                self.current_database = self.current_database.iloc[offres_utiles]
 
-        # If we found relevant job offers according to the sectors requested by the user, we update the database
-        if len(offres_utiles) != 0:
-            self.current_database = self.current_database.iloc[offres_utiles]
+            self.step += 1
 
-        self.step += 1
+        except:
+            self.answer = "Aucune offre ne correspond à votre demande,\n veuillez lancer une nouvelle recherche"
+
+
 
     def emploi(self, information):
         """Computes the answer for the question "Quel emploi cherchez-vous ?".
@@ -138,13 +148,20 @@ class Chatbot:
                          for i in range(self.current_nb_offres)]
         scores_offres_triees = sorted(scores_offres, key=lambda tup: tup[1], reverse = True)
 
+        scores_offres_triees = [scores for scores in scores_offres_triees if scores[1] != 0]
+
         # We keep the top 10 solutions
         solution = []
         for i in range(10):
-            solution.append(self.current_database.loc[scores_offres_triees[i][0], "desc"])
+            try :
+                solution.append(self.current_database.loc[scores_offres_triees[i][0], "desc"])
+            except :
+                solution.append(" ")
+        if solution[0] == " ":
+            solution[0] = "Pas d'offre correspondante"
 
         # We preprocess the job offers list for displaying them
-        self.liste_offres = nettoyage(l=solution, period=60)
+        self.liste_offres = nettoyage(l=solution, period=self.period)
 
         self.step += 1
 

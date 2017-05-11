@@ -8,7 +8,6 @@ from nltk.stem.snowball import FrenchStemmer
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 import pandas as pd
 
-
 stemmer = FrenchStemmer()
 stop_words = get_stop_words('fr')
 stop_words = [e.upper() for e in stop_words]
@@ -22,23 +21,23 @@ def tokenize(text):
         text -- A string
         """
     global stop_words
-    text = text.replace("'", "")
-    pattern = re.compile('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
+    text = text.replace("'", " ") # remplace les apostrophes par des espaces
+    pattern = re.compile('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+') # supprime les URL et mail
     pattern2 = re.compile('www(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
     text = pattern.sub('', text)
     text = pattern2.sub('', text)
-    text = text.replace("(", "").replace(")","")
+    text = text.replace("(", "").replace(")","") # supprime les parenthèses (au milieu de mots)
     text = unicodedata.normalize("NFKD", text)
-    text = text.encode("ASCII", "ignore")
+    text = text.encode("ASCII", "ignore") # remplace les caractères spéciaux et accents
     text = text.decode("utf-8")
-    tokens = re.compile('\w+').findall(text.upper())
-    tokens = [stemmer.stem(e) for e in tokens if ((not (e in stop_words)) and (len(e)>2) and (e[0].isalpha()))]
+    tokens = re.compile('\w+').findall(text.upper()) # tokenise
+    tokens = [stemmer.stem(e) for e in tokens if ((not (e in stop_words)) and (len(e)>2) and (e[0].isalpha()))] # supprime les stop words, petits mots, balises html
 
     return tokens
 
 
 def tokenize2(text):
-    """Returns the array of tokens of the text.
+    """The difference with tokenize is no URL removal (useless), replace / by spaces
 
         Keyword arguments:
         text -- A string
@@ -99,9 +98,12 @@ def calcule_distance(long1lat1, long2, lat2):
         long2 -- The longitude of the second point
         lat2 -- The latitude of the second point
         """
-    p1 = Point(long1lat1)
-    p2 = Point(long2 + " " + lat2)
-    return distance.distance(p1,p2).kilometers
+    try:
+        p1 = Point(long1lat1)
+        p2 = Point(long2 + " " + lat2)
+        return distance.distance(p1, p2).kilometers
+    except:
+        return 100000000
 
 
 def TF_IDF_matrix(dataframe):
@@ -195,8 +197,15 @@ def nettoyage(l, period):
         """
     res = []
     for e in l:
+        e = e.replace("<br>", '\n')
+        e += ' '
         for k in range(1,len(e)//period +1):
-            e = e[:period*k]+ '\n' + e[period*k:]
+            esp = 0
+            while e[period*k + esp] != ' ':
+                esp += 1
+            e = e[:period*k+ esp]+ '\n' + e[period*k+esp:]
+
         res.append(e)
+
 
     return res
