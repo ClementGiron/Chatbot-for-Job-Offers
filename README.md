@@ -1,6 +1,6 @@
 # Chatbot-for-Job-Offers
 
 Authors :
-Clément Giron
-Marion Karakouzian
-Mehdi Abbana Bennani
+Clément Giron  
+Marion Karakouzian  
+Mehdi Abbana Bennani  
