@@ -36,7 +36,7 @@ The script for cleaning the original database is under notebooks/main.ipynb
 
 ## Authors
 
-This chatbot was  developped by :
-Clément Giron
-Marion Karakouzian
-Mehdi Abbana Bennani
+This chatbot was developped by :  
+  * Clément Giron
+  * Marion Karakouzian
+  * Mehdi Abbana Bennani
